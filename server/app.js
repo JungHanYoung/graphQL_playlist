@@ -8,9 +8,12 @@ const bodyParser = require('body-parser');
 const NewBook = require('./models/Book');
 const Author = require('./models/Author');
 
+//keys..
+const keys = require('./keys');
+
 const app = express();
 
-mongoose.connect('mongodb://jhy:7685@ds227469.mlab.com:27469/jhy-gql-playlist');
+mongoose.connect(keys.default.mongodb.url);
 mongoose.connection.once('open', () => {
     console.log('mongodb connected..');
 });
