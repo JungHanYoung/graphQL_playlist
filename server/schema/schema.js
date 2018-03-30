@@ -7,6 +7,18 @@ const Author = require('../models/Author');
 
 const { GraphQLObjectType, GraphQLString, GraphQLSchema, GraphQLID, GraphQLInt, GraphQLList } = graphql;
 
+/**
+ * generate projection object for mongoose
+ * @param  {Object} fieldASTs
+ * @return {Project}
+ */
+export function getProjection (fieldASTs) {
+    return fieldASTs.fieldNodes[0].selectionSet.selections.reduce((projections, selection) => {
+      projections[selection.name.value] = true;
+      return projections;
+    }, {});
+}
+
 var books = [
     { name: 'Name of the Wind', genre: 'Fantasy', id: '1', authorId: '1'},
     { name: 'The Final Empire', genre: 'Fantasy', id: '2', authorId: '2'},
@@ -28,12 +40,16 @@ const BookType = new GraphQLObjectType({
         _id: { type: GraphQLID },
         name: { type: GraphQLString },
         genre: { type: GraphQLString },
+        authorId: { type: GraphQLID },
         author: {
             type: AuthorType,
-            resolve(parent, args){
-                console.log(parent);
-                Author.findById(parent.authorId, (err, author) => {
-                    return author;
+            resolve(parent, args, source, fieldASTs){
+                var projections = getProjection(fieldASTs);
+                return new Promise((resolve, reject) => {
+                    // console.log(parent);
+                    Author.findById(parent.authorId, projections, (err, author) => {
+                        err ? reject(err) : resolve(author);
+                    });
                 });
             }
         }
@@ -48,8 +64,13 @@ const AuthorType = new GraphQLObjectType({
         age: { type: GraphQLInt },
         books: {
             type: new GraphQLList(BookType),
-            resolve(parent, args){
-                return _.filter(books, { authorId: parent.id });
+            resolve(parent, args, source, fieldASTs){
+                var projections = getProjection(fieldASTs);
+                return new Promise((resolve, reject) => {
+                    Book.findById(parent.books, projections, (err, books) => {
+                        err ? reject(err) : resolve(books);
+                    });
+                });
             }
         }
     })
@@ -61,40 +82,52 @@ const RootQuery = new GraphQLObjectType({
         book: {
             type: BookType,
             args: { id: { type: GraphQLID } },
-            resolve(parent, args){
+            resolve(parent, {id}, source, fieldASTs){
                 // code to get data from db / other source
-                Book.findById(args.id, (err, book) => {
-                    console.log(book);
-                    return book;
+                var projections = getProjection(fieldASTs);
+                var foundBook = new Promise((resolve, reject) => {
+                    Book.findById(id, projections, (err, book) => {
+                        err ? reject(err) : resolve(book);
+                    })
                 });
+                return foundBook;
             }
         },
         author: {
             type: AuthorType,
             args: { id: { type: GraphQLID } },
-            resolve(parent, args){
-                Author.findById(args.id, (err, author) => {
-                    console.log(author);
-                    return author;
+            resolve(parent, { id }, source, fieldASTs){
+                var projections = getProjection(fieldASTs);
+                return new Promise((resolve, reject) => {
+                    Author.findById(id, projections, (err, author) => {
+                        err ? reject(err) : resolve(author);
+                    });
                 });
             }
         },
         books: {
             type: new GraphQLList(BookType),
-            resolve(parent, args){
-                Book.find({},'_id name genre authorId' ,(err, books) => {
-                    console.log(books);
-                    return books;
+            resolve(parent, args, source, fieldASTs){
+                //console.log(parent);
+                //console.log(fieldASTs);
+                var projections = getProjection(fieldASTs);
+                //console.log(projections);
+                return new Promise((resolve, reject) => {
+                    Book.find({}, projections, (err, books) => {
+                        err ? reject(err) : resolve(books);
+                    })
                 });
             }
         },
         authors: {
             type: new GraphQLList(AuthorType),
-            resolve(parent, args){
-                Author.find((err, authors) => {
-                    console.log(authors);
-                    return authors;
-                })
+            resolve(parent, args, source, fieldASTs){
+                var projections = getProjection(fieldASTs);
+                return new Promise((resolve, reject) => {
+                    Author.find({}, projections, (err, authors) => {
+                        err ? reject(err) : resolve(authors);
+                    });
+                });
             }
         }
     }

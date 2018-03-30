@@ -27,6 +27,7 @@ app.use('/graphql', graphqlHTTP({
 
 app.get('/', (req, res) => {
     Author.find().then((result) => {
+        console.log(result);
         res.render('home', { result });
     });
 });
