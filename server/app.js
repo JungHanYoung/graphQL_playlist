@@ -13,7 +13,7 @@ const keys = require('./keys');
 
 const app = express();
 
-mongoose.connect(keys.default.mongodb.url);
+mongoose.connect(keys.mongodb.url);
 mongoose.connection.once('open', () => {
     console.log('mongodb connected..');
 });
