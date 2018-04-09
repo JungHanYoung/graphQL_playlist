@@ -7,33 +7,6 @@ const Author = require('../models/Author');
 
 const { GraphQLObjectType, GraphQLString, GraphQLSchema, GraphQLID, GraphQLInt, GraphQLList } = graphql;
 
-/**
- * generate projection object for mongoose
- * @param  {Object} fieldASTs
- * @return {Project}
- */
-export function getProjection (fieldASTs) {
-    return fieldASTs.fieldNodes[0].selectionSet.selections.reduce((projections, selection) => {
-      projections[selection.name.value] = true;
-      return projections;
-    }, {});
-}
-
-var books = [
-    { name: 'Name of the Wind', genre: 'Fantasy', id: '1', authorId: '1'},
-    { name: 'The Final Empire', genre: 'Fantasy', id: '2', authorId: '2'},
-    { name: 'The Long Earth', genre: 'Sci-Fi', id: '3', authorId: '3'},
-    { name: 'The Hero of Ages', aenre: 'Fantasy', id: '4', authorId: '2'},
-    { name: 'The Colour of Magic', aenre: 'Fantasy', id: '5', authorId: '3'},
-    { name: 'The Light Fantastic', aenre: 'Fantasy', id: '6', authorId: '3'}
-];
-
-var authors = [
-    { name: 'Patrick Rothfuss', age: 44, id: '1'},
-    { name: 'Brandon Sanderson', age: 42, id: '2'},
-    { name: 'Terry Partchett', age: 66, id: '3'}
-];
-
 const BookType = new GraphQLObjectType({
     name: 'Book',
     fields: () => ({
