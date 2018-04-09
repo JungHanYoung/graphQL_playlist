@@ -3,6 +3,7 @@ const graphqlHTTP = require('express-graphql');
 const schema = require('./schema/schema');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 
 //const Book = require('./models/schema');
 const NewBook = require('./models/Book');
@@ -17,6 +18,8 @@ mongoose.connect(keys.mongodb.url);
 mongoose.connection.once('open', () => {
     console.log('mongodb connected..');
 });
+// allow cross-origin requests
+app.use(cors());
 
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: false }));

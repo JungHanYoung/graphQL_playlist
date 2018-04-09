@@ -1,13 +1,14 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
+import BookList from './components/BookList';
+
 
 class App extends Component {
   render() {
     return (
-      <div>
-        <ul id="booklist">
-          <li>Book List</li>
-        </ul>
-      </div>
+      <Fragment>
+        <h1>Ninja Book List</h1>
+        <BookList />
+      </Fragment>
     );
   }
 }
